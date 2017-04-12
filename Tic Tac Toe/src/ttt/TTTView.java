@@ -67,8 +67,7 @@ public class TTTView extends JFrame implements MouseListener {
 				render();
 			}
 		});
-		
-		//lafdlanflakjf
+
 		
 		int dim = model.getDimension();
 		locations = new Point[dim][dim];
