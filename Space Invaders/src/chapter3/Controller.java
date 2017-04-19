@@ -30,11 +30,11 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 	private Missile missile;
 	private boolean collided = false;
 	private Canvas canvas;
+	private boolean start = false;
 	
 	private ArrayList<Entity> entities = new ArrayList<>();
 	private ArrayList<Entity> removeList = new ArrayList<>();
 	private ArrayList<MarchingAlien> army = new ArrayList<>();
-	//private MarchingAlien [] moreAliens = new MarchingAlien[XNUM_OF_ALIENS * YNUM_OF_ALIENS];
 	
 	public Controller(){
 		super("Space Invaders");
@@ -88,21 +88,20 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 		timeStamp =System.currentTimeMillis();
 	}
 	
-	private void render(){
+	private void onStart(){
 		BufferStrategy strategy = canvas.getBufferStrategy();
 		Graphics2D gc = (Graphics2D) strategy.getDrawGraphics();
 		
-		long elapsedTime = System.currentTimeMillis() - timeStamp;
-		//clears Screen
 		gc.setColor(Color.BLACK);
 		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 		
-		displayMessage("Save the World!", gc, Color.GREEN, 0);
+		displayMessage ("Uh-Oh Aliens!  Save the World!", gc, Color.RED, 0);
+		displayMessage ("Press [ENTER] to play", gc, Color.GREEN, 20);
+		
 		
 		for (int i = 0; i <entities.size(); i++){
 			Entity e = entities.get(i);
 			e.processKeys(keys);
-			e.move(elapsedTime);
 			
 			for (int j = i+1; j<entities.size(); j++){
 				Entity a = entities.get(j);
@@ -123,7 +122,96 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 		entities.removeAll(removeList);
 		removeList.clear();
 		collided = false;
+		
+		if ( (keys & ENTER_KEY) != 0){
+			SoundFX.STARTUP.play();
+	 		start = true;
+	 		onPlay();
+		}
 	}
+	
+	private void onPlay(){
+		BufferStrategy strategy = canvas.getBufferStrategy();
+		Graphics2D gc = (Graphics2D) strategy.getDrawGraphics();
+
+		long elapsedTime = System.currentTimeMillis() - timeStamp;
+		//clears Screen
+		gc.setColor(Color.BLACK);
+		gc.fillRect(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
+		
+		
+		for (int i = 0; i <entities.size(); i++){
+			Entity e = entities.get(i);
+			e.processKeys(keys);
+			e.move(elapsedTime);
+			
+			for (int j = i+1; j<entities.size(); j++){
+				Entity a = entities.get(j);
+				if (e.inCollision(a)){
+					if (e instanceof Wall && a instanceof MarchingAlien){
+						a.inCollision(e);
+						collided = true;
+					} else
+						a.inCollision(e);
+				}
+				}
+			e.draw(gc);	
+			
+			
+			}
+			
+		gc.dispose();
+		strategy.show();
+		timeStamp = System.currentTimeMillis();
+		entities.removeAll(removeList);
+		removeList.clear();
+		collided = false;
+		
+	
+		// if MarchingAlien inCollision with SpaceShip 
+			//youLost();
+		// if army of MarchingAliens is empty
+			//youWon();
+	}
+	
+	private void youWon(){
+		BufferStrategy strategy = canvas.getBufferStrategy();
+		Graphics2D gc = (Graphics2D) strategy.getDrawGraphics();
+		
+		SoundFX.END.play();
+		
+		start = false;
+		SoundFX.WIN.play();
+		displayMessage ("Game Over!", gc, Color.WHITE, 0);
+		displayMessage ("Yay! You saved planet earth!", gc, Color.GREEN, 20); 
+		playAgain();
+	}
+	
+	private void youLost(){
+		//will the aliens automatically stop moving? or do I have to stop them? if so, how?
+		BufferStrategy strategy = canvas.getBufferStrategy();
+		Graphics2D gc = (Graphics2D) strategy.getDrawGraphics();
+		
+		SoundFX.END.play();
+		
+		start = false;
+		SoundFX.LOSE.play();
+		displayMessage ("Game Over!", gc, Color.WHITE, 0);
+		displayMessage ("Uh-Oh! Everyone died because of you!", gc, Color.RED, 20); 
+		playAgain();
+	}
+	
+	private void playAgain(){
+		//TODO
+	}
+	
+	private void render(){
+		if(start == false){
+			onStart();
+		} else 
+			onPlay();
+	}
+	
 	
 
 	@Override
@@ -131,6 +219,9 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 		switch(e.getKeyCode()){
 		case KeyEvent.VK_SPACE:
 			keys |= SPACE_KEY;
+			break;
+		case KeyEvent.VK_ENTER:
+			keys |= ENTER_KEY;
 			break;
 		case KeyEvent.VK_UP:
 		case KeyEvent.VK_W:
@@ -159,6 +250,9 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 		switch(e.getKeyCode()){
 		case KeyEvent.VK_SPACE:
 			keys &= ~SPACE_KEY;
+			break;
+		case KeyEvent.VK_ENTER:
+			keys &= ~ENTER_KEY;
 			break;
 		case KeyEvent.VK_UP:
 		case KeyEvent.VK_W:

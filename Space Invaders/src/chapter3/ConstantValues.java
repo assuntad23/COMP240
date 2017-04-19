@@ -7,6 +7,7 @@ public interface ConstantValues {
 	byte LEFT_KEY = 0x04;
 	byte RIGHT_KEY = 0x01;
 	byte DOWN_KEY = 0x02;
+	byte ENTER_KEY = 0x40;
 
 	int SCREEN_WIDTH = 800;
 	int SCREEN_HEIGHT = 600;
