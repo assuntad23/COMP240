@@ -31,6 +31,7 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 	private boolean collided = false;
 	private Canvas canvas;
 	private boolean start = false;
+	private int num2Kill = XNUM_OF_ALIENS*YNUM_OF_ALIENS;
 	
 	private ArrayList<Entity> entities = new ArrayList<>();
 	private ArrayList<Entity> removeList = new ArrayList<>();
@@ -153,6 +154,16 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 						collided = true;
 					} else
 						a.inCollision(e);
+					if (e instanceof SpaceShip && a instanceof MarchingAlien){
+						if (a.inCollision(e)){
+							System.out.println("Lost");
+							youLost();
+						}
+					}
+					/* use inCollision or... 
+					 * if (a.getBounds().intersects(e.getBounds()))
+					 * 
+					 */
 				}
 				}
 			e.draw(gc);	
@@ -170,8 +181,10 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 	
 		// if MarchingAlien inCollision with SpaceShip 
 			//youLost();
-		// if army of MarchingAliens is empty
-			//youWon();
+			// should this be a separate for loop or should it be included above ^... It's not working above. so?
+		if (num2Kill == 0)
+		//Where to place num2Kill--;?
+			youWon();
 	}
 	
 	private void youWon(){
@@ -180,25 +193,21 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 		
 		SoundFX.END.play();
 		
-		start = false;
 		SoundFX.WIN.play();
 		displayMessage ("Game Over!", gc, Color.WHITE, 0);
 		displayMessage ("Yay! You saved planet earth!", gc, Color.GREEN, 20); 
-		playAgain();
 	}
 	
-	private void youLost(){
+	public void youLost(){
 		//will the aliens automatically stop moving? or do I have to stop them? if so, how?
 		BufferStrategy strategy = canvas.getBufferStrategy();
 		Graphics2D gc = (Graphics2D) strategy.getDrawGraphics();
 		
 		SoundFX.END.play();
 		
-		start = false;
 		SoundFX.LOSE.play();
 		displayMessage ("Game Over!", gc, Color.WHITE, 0);
 		displayMessage ("Uh-Oh! Everyone died because of you!", gc, Color.RED, 20); 
-		playAgain();
 	}
 	
 	private void playAgain(){
