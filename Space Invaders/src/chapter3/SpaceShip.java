@@ -2,6 +2,7 @@ package chapter3;
 
 import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
 
 
 
@@ -71,6 +72,15 @@ public class SpaceShip extends Entity implements ConstantValues{
 				rx = right-dimension.width;
 				vx = 0;
 			}
+		} 
+		if (e instanceof MarchingAlien){
+			MarchingAlien a = (MarchingAlien) e;
+			Rectangle rf = new Rectangle((int) rx, (int) ry, dimension.width, dimension.height);
+			Rectangle rs = new Rectangle((int)a.rx, (int)a.ry, a.dimension.width, a.dimension.height);
+			
+			if (rf.intersects(rs)){
+				return true;
+			}			
 		}
 		return false;
 	}

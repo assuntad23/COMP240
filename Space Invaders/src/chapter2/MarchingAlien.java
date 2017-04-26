@@ -37,21 +37,6 @@ public class MarchingAlien extends Entity implements ConstantValues {
 
 	@Override
 	public boolean inCollision(Entity e) {
-		/*if (e instanceof Wall){
-			int left = 0;
-			int right = ((Wall) e).getBounds().width;
-			if (rx <= left){
-				rx = 0;
-				ry = ry + dimension.height;
-				vx = -vx;
-			} else if (rx >= right-dimension.width){
-				rx = right-dimension.width;
-				vx = 0;
-				ry = ry + dimension.height;
-				vx = -vx;
-			}
-		}
-		*/
 		if (e instanceof Missile){
 			Missile m = (Missile) e;
 			Rectangle r1 = new Rectangle((int)rx, (int)ry, dimension.width, dimension.height);
@@ -61,6 +46,17 @@ public class MarchingAlien extends Entity implements ConstantValues {
 				return true;
 			}
 		}
+		
+		if (e instanceof SpaceShip){
+			SpaceShip s = (SpaceShip) e;
+			Rectangle rf = new Rectangle((int) rx, (int) ry, dimension.width, dimension.height);
+			Rectangle rs = new Rectangle((int)s.rx, (int)s.ry, s.dimension.width, s.dimension.height);
+			System.out.println("HERE " + rf.getX() + " + " + rf.getX());
+			if (rf.intersects(rs)){
+				return true;
+			}
+		}
+		
 		return false;
 	}
 }

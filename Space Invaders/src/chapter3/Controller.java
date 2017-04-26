@@ -36,6 +36,15 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 	private ArrayList<Entity> entities = new ArrayList<>();
 	private ArrayList<Entity> removeList = new ArrayList<>();
 	private ArrayList<MarchingAlien> army = new ArrayList<>();
+	private GameState state = GameState.START;
+	
+	private enum GameState {
+		UNSTART,
+		START,
+		PLAY,
+		WON,
+		LOST
+	}
 	
 	public Controller(){
 		super("Space Invaders");
@@ -79,8 +88,7 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 	}
 	
 	public void start(){
-		timer = new Timer (1000/FPS, new ActionListener(){
-			
+		timer = new Timer (1000/FPS, new ActionListener(){ 
 			public void actionPerformed(ActionEvent e) {
 				render();
 			}
@@ -99,7 +107,6 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 		displayMessage ("Uh-Oh Aliens!  Save the World!", gc, Color.RED, 0);
 		displayMessage ("Press [ENTER] to play", gc, Color.GREEN, 20);
 		
-		
 		for (int i = 0; i <entities.size(); i++){
 			Entity e = entities.get(i);
 			e.processKeys(keys);
@@ -115,7 +122,7 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 				}
 				}
 			e.draw(gc);	
-			}
+		}
 			
 		gc.dispose();
 		strategy.show();
@@ -127,7 +134,7 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 		if ( (keys & ENTER_KEY) != 0){
 			SoundFX.STARTUP.play();
 	 		start = true;
-	 		onPlay();
+	 		state = GameState.PLAY;
 		}
 	}
 	
@@ -149,27 +156,22 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 			for (int j = i+1; j<entities.size(); j++){
 				Entity a = entities.get(j);
 				if (e.inCollision(a)){
+					if ((e instanceof SpaceShip && a instanceof MarchingAlien)){
+						a.inCollision(e);
+						collided = true;
+						state = GameState.LOST;
+					}
 					if (e instanceof Wall && a instanceof MarchingAlien){
 						a.inCollision(e);
 						collided = true;
 					} else
 						a.inCollision(e);
-					if (e instanceof SpaceShip && a instanceof MarchingAlien){
-						if (a.inCollision(e)){
-							System.out.println("Lost");
-							youLost();
-						}
-					}
-					/* use inCollision or... 
-					 * if (a.getBounds().intersects(e.getBounds()))
-					 * 
-					 */
 				}
-				}
+			}
+			
 			e.draw(gc);	
 			
-			
-			}
+		}
 			
 		gc.dispose();
 		strategy.show();
@@ -178,13 +180,9 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 		removeList.clear();
 		collided = false;
 		
-	
-		// if MarchingAlien inCollision with SpaceShip 
-			//youLost();
-			// should this be a separate for loop or should it be included above ^... It's not working above. so?
 		if (num2Kill == 0)
-		//Where to place num2Kill--;?
-			youWon();
+			state = GameState.WON;
+		
 	}
 	
 	private void youWon(){
@@ -196,6 +194,10 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 		SoundFX.WIN.play();
 		displayMessage ("Game Over!", gc, Color.WHITE, 0);
 		displayMessage ("Yay! You saved planet earth!", gc, Color.GREEN, 20); 
+		gc.dispose();
+		strategy.show();
+		timeStamp = System.currentTimeMillis();
+		
 	}
 	
 	public void youLost(){
@@ -208,6 +210,9 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 		SoundFX.LOSE.play();
 		displayMessage ("Game Over!", gc, Color.WHITE, 0);
 		displayMessage ("Uh-Oh! Everyone died because of you!", gc, Color.RED, 20); 
+		gc.dispose();
+		strategy.show();
+		timeStamp = System.currentTimeMillis();
 	}
 	
 	private void playAgain(){
@@ -215,10 +220,29 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 	}
 	
 	private void render(){
-		if(start == false){
-			onStart();
-		} else 
-			onPlay();
+		
+		switch(state){
+			case START:
+				onStart();
+				break;
+			case PLAY:
+				onPlay();
+				break;
+			case WON:
+				youWon();
+				state = GameState.UNSTART;
+				break;
+			case LOST:
+				youLost();
+				state = GameState.UNSTART;
+				break;
+			case UNSTART:
+				if ( (keys & ENTER_KEY) != 0){
+					playAgain();
+				}
+				break;
+		}
+		
 	}
 	
 	
@@ -312,6 +336,8 @@ public class Controller extends JFrame implements KeyListener, ConstantValues, G
 
 	@Override
 	public void onEndOfLife(Entity e) {
+		if (e instanceof MarchingAlien)
+			num2Kill--;
 		removeList.add(e);
 	}
 
